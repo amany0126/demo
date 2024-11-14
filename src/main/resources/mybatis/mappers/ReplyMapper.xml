@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.example.demo.reply.model.mapper.ReplyMapper">
+	
+ 	<resultMap id="replyResultSet" type="reply">
+		<result column="REPLY_NO" property="replyNo" />
+		<result column="REPLY_CONTENT" property="replyContent" />
+		<result column="REPLY_ENROLL_DATE" property="replyEnrollDate" />
+		<result column="REPLY_STATUS" property="replyStatus" />
+		<result column="PARENT_NO" property="parentNo" />
+		<result column="REPLY_LEVEL" property="replyLevel" />
+		<result column="POST_NO" property="postNo" />
+		<result column="MEMBER_NO" property="memberNo" />
+	</resultMap>
+	
+ 	 <insert id="insertReply" parameterType="reply" >
+    	INSERT INTO REPLY(REPLY_NO,REPLY_CONTENT,PARENT_NO,REPLY_LEVEL,POST_NO,MEMBER_NO)
+    				VALUES(SEQ_REPLY_NO.NEXTVAL,#{replyContent},#{parentNo},#{replyLevel},#{postNo},#{memberNo})					   
+    </insert>
+    
+    <select id="selectReply" resultMap="replyResultSet" parameterType="_int" >
+	      SELECT R.REPLY_NO AS "REPLY_NO", R.PARENT_NO ,CASE WHEN (SELECT  MM.MEMBER_NICKNAME AS "PARENT_NICKNAME"
+                                                        FROM MEMBER MM
+                                                        JOIN REPLY RR ON (RR.MEMBER_NO = MM.MEMBER_NO)
+                                                        WHERE RR.REPLY_NO = R.PARENT_NO)  is null THEN
+           REPLY_CONTENT
+        ELSE
+        ('@'||
+                                            ( SELECT  M1.MEMBER_NICKNAME AS "PARENT_NICKNAME"
+                                            FROM MEMBER M1
+                                            JOIN REPLY R1 ON (R1.MEMBER_NO = M1.MEMBER_NO)
+                                            WHERE R1.REPLY_NO = R.PARENT_NO) || ' ' || REPLY_CONTENT ) END AS "REPLY_CONTENT",SUBSTR(REPLY_ENROLL_DATE,1, 17) as "REPLY_ENROLL_DATE",
+                                                                                                              REPLY_STATUS,REPLY_LEVEL,m.MEMBER_NICKNAME AS "MEMBER_NO",POST_NO
+        FROM REPLY R
+        JOIN MEMBER M ON (M.MEMBER_NO = R.MEMBER_NO)
+        WHERE POST_NO = #{Pno}
+        START WITH PARENT_NO = 0 
+        CONNECT BY PARENT_NO = PRIOR  REPLY_NO     
+	</select>
+	
+	<update id="deleteReply" parameterType="reply" >
+		UPDATE REPLY
+		   SET REPLY_STATUS = 'N'
+		 WHERE REPLY_STATUS = 'Y'
+		   AND POST_NO = #{postNo} AND  REPLY_NO = #{replyNo}
+	</update>
+	
+	
+	<update id="UpdateReply" parameterType="reply" >
+		UPDATE REPLY
+		   SET REPLY_CONTENT = #{replyContent}
+		 WHERE REPLY_STATUS = 'Y'
+		   AND POST_NO = #{postNo} AND  REPLY_NO = #{replyNo}
+	</update>
+</mapper>

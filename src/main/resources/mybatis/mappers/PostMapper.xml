@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.example.demo.post.model.mapper.PostMapper">
+	
+ 	<resultMap id="PostResultSet" type="post">
+		<result column="POST_NO" property="postNo" />
+		<result column="POST_TITLE" property="postTitle" />
+		<result column="POST_CONTENT" property="postContent" />
+		<result column="POST_COUNT" property="postCount" />
+		<result column="POST_DATE" property="postDate" />
+		<result column="POST_STATUS" property="postStatus" />
+		<result column="MEMBER_NO" property="memberNo" />
+	</resultMap>
+	
+	<resultMap id="PostAttachmentResultSet" type="postAttachment">
+		<result column="ORIGIN_NAME" property="originName" />
+		<result column="CHANG_NAME" property="changName" />
+		<result column="STATUS" property="status" />
+		<result column="POST_NO" property="postNo" />
+	</resultMap>
+ 	
+    <insert id="insertPost" parameterType="post" >
+    	INSERT INTO POST(POST_NO,POST_TITLE,POST_CONTENT,MEMBER_NO)
+    				VALUES(SEQ_POST_NO.NEXTVAL,#{postTitle},#{postContent},#{memberNo})					   
+    </insert>
+    <insert id="insertPostAttachment" parameterType="postAttachment" >
+    	INSERT INTO POST_ATTACHMENT(ORIGIN_NAME,CHANG_NAME,POST_NO)
+    				VALUES(#{originName},#{changName},SEQ_POST_NO.CURRVAL)					   
+    </insert>
+    
+     <select id="selectListAllCount" resultType="_int" >
+       SELECT COUNT(*) 
+       		FROM POST
+       WHERE POST_STATUS = 'Y'		
+    </select>
+    
+    <select id="selectAllList" resultMap="PostResultSet"  >
+			SELECT P.POST_NO,POST_TITLE,POST_CONTENT,POST_DATE,m.MEMBER_NICKNAME as "MEMBER_NO", ( SELECT COUNT(*)
+                                                                                             FROM REPLY R
+                                                                                             WHERE R.POST_NO = P.POST_NO) AS "POST_COUNT"
+		  FROM POST P
+           JOIN MEMBER M ON (P.MEMBER_NO = M.MEMBER_NO)
+
+		 WHERE POST_STATUS = 'Y' 
+		 ORDER BY POST_NO DESC
+	</select>
+	
+    <select id="selectPosrt"  resultMap="PostResultSet" parameterType="_int" >
+      SELECT P.POST_NO,POST_TITLE,POST_CONTENT,POST_DATE,m.MEMBER_NICKNAME as "MEMBER_NO", ( SELECT COUNT(*)
+                                                                                             FROM REPLY R
+                                                                                             WHERE R.POST_NO = P.POST_NO) AS "POST_COUNT"
+		  FROM POST P
+           JOIN MEMBER M ON (P.MEMBER_NO = M.MEMBER_NO)
+       WHERE POST_STATUS = 'Y' AND	POST_NO = ${pno}	
+       
+    </select>	
+    <select id="selectPostAttachment"  resultMap="PostAttachmentResultSet" parameterType="_int" >
+	    SELECT *
+	    		FROM POST_ATTACHMENT
+	    WHERE STATUS
+	     = 'Y' AND	POST_NO = ${pno}	
+ 	</select>	
+ 	
+ 	<update id="deletePost" parameterType="_int" >
+		UPDATE POST
+		   SET POST_STATUS = 'N'
+		 WHERE POST_STATUS = 'Y'
+		   AND POST_NO = #{pno}	
+	</update>
+	
+	<update id="deletePostAttachment" parameterType="_int" >
+		UPDATE POST_ATTACHMENT
+		   SET STATUS = 'N'
+		 WHERE STATUS = 'Y'
+		   AND POST_NO = #{pno}	
+	</update>
+	
+	<update id="updatePost" parameterType="post" >
+		UPDATE POST
+		   SET POST_TITLE = #{postTitle}, POST_CONTENT = #{postContent}	
+		 WHERE POST_STATUS = 'Y'
+		   AND POST_NO = #{postNo}	AND MEMBER_NO = #{memberNo}	
+	</update>
+	<insert id="insertUpdatePostAttachment" parameterType="postAttachment" >
+    	INSERT INTO POST_ATTACHMENT(ORIGIN_NAME,CHANG_NAME,POST_NO)
+    				VALUES(#{originName},#{changName},#{postNo})					   
+    </insert>
+	<delete id="updatePostAttachment" parameterType="postAttachment" >
+	
+		DELETE 
+		  FROM POST_ATTACHMENT
+		WHERE STATUS = 'Y'AND POST_NO = #{postNo} AND CHANG_NAME = #{changName}
+	</delete>
+	
+	  <select id="checkPost" resultType="_int" >
+       SELECT COUNT(*) 
+       		FROM POST
+       WHERE POST_STATUS = 'Y' AND POST_NO = #{postNo}	AND MEMBER_NO = #{memberNo}			
+    </select>
+</mapper>

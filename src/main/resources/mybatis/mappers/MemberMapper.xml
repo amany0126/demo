@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.example.demo.member.model.mapper.MemberMapper">
+	
+ 	<resultMap id="memberResultSet" type="member">
+		<result column="MEMBER_NO" property="memberNo" />
+		<result column="MEMBER_NICKNAME" property="memberNickName" />
+		<result column="MEMBER_EMAIL" property="memberEmail" />
+		<result column="MEMBER_PWD" property="memberPwd" />
+		<result column="MEMBER_PHONE" property="memberPhone" />
+		<result column="MEMBER_ADDRESS" property="memberAddress" />
+		<result column="MEMBER_DETAIL_ADDRESS" property="memberDetalAddress" />
+		<result column="MEMBER_ADDRESS_CODE" property="memberAddressCode" />
+		<result column="MEMBER_ADDRESS_NOTE" property="memberAddressNote" />
+		<result column="MEMBER_ENROLL_DATE" property="memberEnrollDate" />
+		<result column="MEMBER_STATUS" property="memberStatus" />
+	</resultMap>
+
+ 
+    <select id="nickNameCheck" resultType="_int" parameterType="string">
+       SELECT COUNT(*) 
+       		FROM MEMBER
+       WHERE MEMBER_NICKNAME = #{nickNameCheck}		
+    </select>
+ 	
+ 	<select id="memberEmailCheck" resultType="_int" parameterType="string">
+       SELECT COUNT(*) 
+       		FROM MEMBER
+       WHERE MEMBER_EMAIL = #{memberEmailCheck}		
+    </select>
+ 	
+    <insert id="memberInsert" parameterType="member" >
+    	INSERT INTO MEMBER(MEMBER_NO,MEMBER_NICKNAME,MEMBER_EMAIL,MEMBER_PWD,MEMBER_PHONE,
+    					   MEMBER_ADDRESS,MEMBER_DETAIL_ADDRESS,MEMBER_ADDRESS_CODE,MEMBER_ADDRESS_NOTE)
+    				VALUES(SEQ_MEMBER_NO.NEXTVAL,#{memberNickName},#{memberEmail},#{memberPwd},#{memberPhone},
+    						#{memberAddress},#{memberDetalAddress},#{memberAddressCode},#{memberAddressNote})					   
+    </insert>
+    
+    <select id="loginMember" resultType="member" resultMap="memberResultSet">
+       SELECT *
+       		FROM MEMBER
+       WHERE MEMBER_EMAIL = #{memberEmail}  AND MEMBER_STATUS = 'Y' 		
+    </select>
+</mapper>
